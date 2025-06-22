@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "ordis-rag"
+version = "0.1.0"
+description = ""
+authors = ["Will Meyburgh <annekinmeyburgh@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langgraph = "^0.4.8"
+langchain-google-genai = "^2.1.5"
+langchain = "^0.3.26"
+python-dotenv = "^1.1.0"
+langchain-text-splitters = "^0.3.8"
+langchain-community = "^0.3.26"
+langchain-chroma = "^0.2.4"
+beautifulsoup4 = "^4.13.4"
+protobuf = "==3.20.*"
+setuptools = "^80.9.0"
+langchain-tavily = "^0.2.3"
+pyyaml = "^6.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
