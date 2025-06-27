@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+
+from ordis_rag.wiki.wiki_loader import WikiLoader
 load_dotenv()
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -23,7 +25,7 @@ from langgraph.graph import START, StateGraph
 from typing_extensions import List, TypedDict
 
 # Load and chunk contents of the blog
-loader = WebBaseLoader(
+loader = WikiLoader(
     web_paths=("https://wiki.warframe.com/w/Warframes",),
 )
 docs = loader.load()
@@ -70,5 +72,5 @@ graph_builder = StateGraph(State).add_sequence([retrieve, generate])
 graph_builder.add_edge(START, "retrieve")
 graph = graph_builder.compile()
 
-state= State(question='give me the link to chroma webpage', context=[], answer='')
+state= State(question='which is the latest warframe', context=[], answer='')
 print(graph.invoke(state)['answer'])

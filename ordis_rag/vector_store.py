@@ -9,5 +9,5 @@ def load_vector_store(name: str) -> Chroma:
     return Chroma(
         collection_name="warframe",
         embedding_function=embeddings,
-        persist_directory=f"./data/{name}",
+        persist_directory=f"./data/vector_stores/{name}",
     )

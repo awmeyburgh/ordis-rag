@@ -23,7 +23,7 @@
 "generate/template": |
   Context: {context}
   Question: {question}
-  Answer: Be concise and avoid repeating information.
+  Answer:
   Maintain a neutral tone and avoid making assumptions.
 "validate/system": |
   You are a grader determining the relevance of answer to a user query.
@@ -34,3 +34,12 @@
   Question: {question}
   Answer: {answer}
   If the relevance is ambiguous, err on the side of caution and mark it as not relevant.
+"resource_retriever/system": |
+  You are attempting to find the resouces required to fulfill a users request, you are given the users request
+  and a list of all available resources, formatted as followed
+  {uniqueName}:::{category}:::{pretty name}
+  please return a list of uniqueNames of all resources required
+"resource_retriever/template": |
+  Question: {question}
+  Resources:
+  {resources}

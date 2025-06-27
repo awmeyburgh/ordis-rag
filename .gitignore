@@ -193,4 +193,6 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-data
+data/vector_stores/
+
+.test_output.txt

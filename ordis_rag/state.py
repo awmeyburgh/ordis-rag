@@ -6,6 +6,7 @@ from langchain_core.documents import Document
 class OrdisState(TypedDict):
     question: str
     web_question: str
+    resources: List[str]
     documents: List[Document]
     answer: str
     supplement: bool
@@ -15,7 +16,8 @@ class OrdisState(TypedDict):
         return OrdisState(
             question=question,
             web_question='',
-            documents=[], 
+            documents=[],
+            resources=[], 
             answer='', 
             supplement=False
         )

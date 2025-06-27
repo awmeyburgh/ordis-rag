@@ -1,4 +1,5 @@
 from typing import Literal
+import bs4
 from langgraph.graph import START, END
 from langgraph.graph.state import StateGraph
 from langgraph.types import Command
@@ -8,12 +9,16 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_community.document_loaders import WebBaseLoader
 
 from ordis_rag.llm import load_llm
 from ordis_rag.model.grade import Grade
+from ordis_rag.model.resources import Resources
 from ordis_rag.prompts import load_prompts
+from ordis_rag.resource.stats.stats import Stats
 from ordis_rag.state import OrdisState
 from ordis_rag.vector_store import load_vector_store
+from ordis_rag.wiki.wiki_loader import WikiLoader
 
 class Ordis(StateGraph):
     @classmethod
@@ -29,6 +34,43 @@ class Ordis(StateGraph):
 
     def retriever(self, state: OrdisState) -> OrdisState:
         state['documents'] = self.vector_store.similarity_search(state['question'])
+        return state
+    
+    def resource_retriever(self, state: OrdisState) -> OrdisState:
+        all_resources = '\n'.join(Stats.all_resources().values())
+        template = PromptTemplate.from_template(self.prompts["resource_retriever/template"])
+        resources: Resources = self.llm\
+            .with_structured_output(Resources)\
+            .invoke([
+                SystemMessage(self.prompts["resource_retriever/system"]),
+                HumanMessage(
+                    template.invoke({
+                        'question': state['question'],
+                        'resources': all_resources
+                    }).text
+                )
+            ])
+
+        state['resources'] = resources.uniqueNames
+
+        return state
+
+    def wiki_retriever(self, state: OrdisState) -> OrdisState:
+        urls = []
+        for resource in state['resources']:
+            print(resource)
+            if resource in Stats.all():
+                url = Stats.all()[resource].wikiaUrl
+                print(url)
+                if url is not None:
+                    urls.append(url)
+
+        loader = WikiLoader(
+            web_paths=urls,
+        )
+
+        state['documents'] = loader.load()
+
         return state
     
     def grade_documents(self, state: OrdisState) -> Command[Literal['generate', 'transform_query']]:
@@ -139,17 +181,23 @@ class Ordis(StateGraph):
             )
 
     def compile(self, checkpointer = None, *, cache = None, store = None, interrupt_before = None, interrupt_after = None, debug = False, name = None):
-        self.add_node('retriever', self.retriever)
+        # self.add_node('retriever', self.retriever)
+
+        self.add_node('resource_retriever', self.resource_retriever)
+        self.add_node('wiki_retriever', self.wiki_retriever)
         self.add_node('grade_documents', self.grade_documents)
         self.add_node('transform_query', self.transform_query)
         self.add_node('websearch', self.websearch)
         self.add_node('generate', self.generate)
         self.add_node('validate', self.validate_generation)
 
-        self.add_edge(START, 'retriever')
-        self.add_edge('retriever', 'grade_documents')
+        self.add_edge(START, 'resource_retriever')
+        self.add_edge('resource_retriever', 'wiki_retriever')
+        # self.add_edge('wiki_retriever', 'grade_documents')
+        self.add_edge('wiki_retriever', 'generate')
         self.add_edge('transform_query', 'websearch')
         self.add_edge('websearch', 'generate')
-        self.add_edge('generate', 'validate')
+        self.add_edge('generate', END)
+        # self.add_edge('generate', 'validate')
 
         return super().compile(checkpointer, cache=cache, store=store, interrupt_before=interrupt_before, interrupt_after=interrupt_after, debug=debug, name=name)
