@@ -2,6 +2,19 @@
 
 Ordis RAG is a Retrieval Augmented Generation (RAG) system designed to answer questions, primarily focusing on Warframe-related queries by leveraging information from the Warframe Wiki. It uses a LangGraph-based agent architecture to process user input, retrieve relevant information, and generate informed responses.
 
+
+## Agent Architecture
+
+The Ordis RAG agent operates through a defined flow to process user queries and generate answers. The current active flow is illustrated below:
+
+```mermaid
+graph TD
+    A[Start] --> B(Resource Retriever);
+    B --> C(Wiki Retriever);
+    C --> D(Generate Answer);
+    D --> E[End];
+```
+
 ## Setup
 
 To set up the project, follow these steps:
@@ -30,18 +43,6 @@ To start the Ordis RAG agent, run the following command:
 
 ```bash
 poetry run python -m ordis_rag
-```
-
-## Agent Architecture
-
-The Ordis RAG agent operates through a defined flow to process user queries and generate answers. The current active flow is illustrated below:
-
-```mermaid
-graph TD
-    A[Start] --> B(Resource Retriever);
-    B --> C(Wiki Retriever);
-    C --> D(Generate Answer);
-    D --> E[End];
 ```
 
 ### Flow Explanation:
